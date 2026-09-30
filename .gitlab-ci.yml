@@ -1,0 +1,49 @@
+stages:
+  - build
+  - deploy
+
+build_image:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - mkdir -p /kaniko/.docker
+    # Prepare Docker Hub authentication
+    - AUTH=$(echo -n "${DOCKER_HUB_USERNAME}:${DOCKER_HUB_TOKEN}" | base64 | tr -d '\n')
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$AUTH\"}}}" > /kaniko/.docker/config.json
+    
+    # Build and push with Build Arguments
+    - /kaniko/executor 
+      --context "${CI_PROJECT_DIR}" 
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile" 
+      --destination "${DOCKER_HUB_USERNAME}/najeewoods_dashboard:latest" 
+      --cache=true
+      --build-arg NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL}" 
+      --build-arg NEXT_PUBLIC_IMG_URL="${NEXT_PUBLIC_IMG_URL}" 
+      --build-arg NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}" 
+      --build-arg PORT="${PORT}"
+
+deploy_server:
+  stage: deploy
+  image: alpine:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SERVER_SSH_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $SERVER_HOST >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - >
+      ssh $SERVER_USER@$SERVER_HOST "
+      cd /var/www/najeewoods_dashboard &&
+      docker compose pull najeewoods_dashboard &&
+      docker compose up -d --force-recreate najeewoods_dashboard &&
+      docker image prune -a -f
+      "

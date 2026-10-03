@@ -102,7 +102,9 @@ export class helpers {
       return href;
     }
 
-    const base = process.env.NEXT_PUBLIC_IMG_URL!.replace(/\/+$/, "");
+    const base = (
+      process.env.NEXT_PUBLIC_IMG_URL || "https://api.findavibes.com/"
+    ).replace(/\/+$/, "");
     const path = href.replace(/^\/+/, "");
 
     return `${base}/${path}`;

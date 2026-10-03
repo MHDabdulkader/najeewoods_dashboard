@@ -23,7 +23,9 @@ export default function AudioBers({
   const [duration, setDuration] = useState("0:00");
   const [progress, setProgress] = useState(0);
 
-  const audioLink = process.env.NEXT_PUBLIC_IMG_URL + audioSource;
+  const audioLink =
+    (process.env.NEXT_PUBLIC_IMG_URL || "https://api.findavibes.com/") +
+    audioSource;
 
   // 🔊 Toggle play/pause
   const togglePlay = (e: any) => {

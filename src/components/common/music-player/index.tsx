@@ -25,7 +25,8 @@ export default function MusicPlayer({
   const progressBarRef = useRef<HTMLDivElement | null>(null);
 
   const audioLink = custom
-    ? process.env.NEXT_PUBLIC_IMG_URL + audioSource
+    ? (process.env.NEXT_PUBLIC_IMG_URL || "https://api.findavibes.com/") +
+      audioSource
     : audioSource;
 
   /** 🎵 Toggle play / pause */

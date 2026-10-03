@@ -19,10 +19,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_IMG_URL
+ARG NEXT_PUBLIC_API_URL=https://api.findavibes.com/api/v1
+ARG NEXT_PUBLIC_IMG_URL=https://api.findavibes.com/
 ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-ARG PORT
+ARG PORT=5050
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_IMG_URL=${NEXT_PUBLIC_IMG_URL}
@@ -35,6 +35,10 @@ RUN npm run build
 FROM node:20-alpine AS runner
 
 WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=5050
+ENV HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

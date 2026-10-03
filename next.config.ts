@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
+  serverRuntimeConfig: {
+    port: process.env.PORT
+  },
+
 
   // ✔ Prevent browser from using old cached chunks
   generateEtags: false,
